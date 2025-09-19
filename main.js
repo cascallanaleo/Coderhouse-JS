@@ -1,6 +1,5 @@
 
-//DEFINICION DE FUNCIONES-----------------------------------------
-// Array con productos iniciales
+// DEFINICION DE ARRAYS y VARIABLES
 let productos = [
     { id: 1, descripcion: "arandela chica", stock: 50 },
     { id: 2, descripcion: "arandela grande", stock: 100 },
@@ -8,13 +7,20 @@ let productos = [
     { id: 4, descripcion: "Destornillador plano", stock: 10 },
 ];
 let ultimoId = 4;
-let cantidadProductos = productos.length;;
+let cantidadProductos = productos.length;
+const listaOpcionesMenu = "Seleccione una opción del menú:\n" +
+    "1 - Mostrar inventario\n" +
+    "2 - Agregar producto nuevo\n" +
+    "3 - Eliminar un producto\n" +
+    "9 - Salir\n" +
+    "\nOpción:";
 
+//DEFINICION DE FUNCIONES-----------------------------------------
 function armarListaProductos() {
     cantidadProductos = productos.length;
     let listaProductos = "";
     if (cantidadProductos === 0) {
-        listaProductos = "Sin productos";
+        listaProductos = "Sin productos en el inventario";
     } else {
         listaProductos = "ID | Descripción | Stock\n";
         listaProductos = listaProductos + "--------------------------------------\n";
@@ -32,7 +38,7 @@ function armarListaProductos() {
 function mostrarInventario() {
     let lista = armarListaProductos();
     if (cantidadProductos !== 0) {
-        lista = lista + "cantidad de items de productos: " + cantidadProductos
+        lista = lista + "cantidad de productos en el inventario: " + cantidadProductos
     };
     alert(lista);
 }
@@ -103,40 +109,36 @@ function eliminarProducto() {
 
 
 //INICIO DEL PROGRAMA-----------------------------------------
-let continua = true
-let listaOpcionesMenu = "Sleccione una opción \n" +
-    "1-Muestra inventario\n" +
-    "2-Ingresa producto nuevo\n" +
-    "3-Elimina un producto\n" +
-    "9-Salir\n" +
-    "\nOpción: ";
-do {
-    let opcionMenu = prompt(listaOpcionesMenu);
-    if (opcionMenu === null) {
-        opcionMenu = "9"
-    }
-    // console.log(opcionMenu + "-" + isNaN(opcionMenu));
-    // console.log("pasa");
-    if (isNaN(opcionMenu) || parseInt(opcionMenu) < 1 || parseInt(opcionMenu) > 9) {
-        alert("Debe ingresar una opción válida");
-    }
-    else {
-        console.log(parseInt(opcionMenu));
-        switch (parseInt(opcionMenu)) {
-            case 1:
-                mostrarInventario();
-                break;
-            case 2:
-                agregarProducto();
-                break;
-            case 3:
-                eliminarProducto();
-                break;
-            case 9:
-                continua = !confirm("Desea salir el sistema?");
-                break;
+function iniciarSimulador() {
+    let continua = true
+    do {
+        let opcionMenu = prompt(listaOpcionesMenu);
+        if (opcionMenu === null) {
+            opcionMenu = "9"
+        }
+        // console.log(opcionMenu + "-" + isNaN(opcionMenu));
+        // console.log("pasa");
+        if (isNaN(opcionMenu) || parseInt(opcionMenu) < 1 || parseInt(opcionMenu) > 9) {
+            alert("Debe ingresar una opción válida");
+        }
+        else {
+            console.log(parseInt(opcionMenu));
+            switch (parseInt(opcionMenu)) {
+                case 1:
+                    mostrarInventario();
+                    break;
+                case 2:
+                    agregarProducto();
+                    break;
+                case 3:
+                    eliminarProducto();
+                    break;
+                case 9:
+                    continua = !confirm("Desea salir el sistema?");
+                    break;
+            }
         }
     }
+    while (continua);
 }
-while (continua);
 
