@@ -12,6 +12,8 @@ const listaOpcionesMenu = "Seleccione una opción del menú:\n" +
     "1 - Mostrar inventario\n" +
     "2 - Agregar producto nuevo\n" +
     "3 - Eliminar un producto\n" +
+    "4 - Consumir stock de un producto\n" +
+    "5 - Ingresar stock a un producto\n" +
     "9 - Salir\n" +
     "\nOpción:";
 
@@ -108,6 +110,105 @@ function eliminarProducto() {
 }
 
 
+// Función consume stock de producto 
+function consumirStock() {
+    while (true) {
+        let lista = armarListaProductos();
+        if (cantidadProductos === 0) {
+            alert(lista);
+            return;
+        }
+        else {
+            lista = lista + "Ingrese Id del producto a consumir stock o presione boton cancelar:";
+            let opcion = prompt(lista);
+            if (opcion === null) {
+                return;
+            }
+            else {
+                let idProducto = parseInt(opcion);
+
+                if (isNaN(idProducto)) {
+                    alert("Debe ingresar un número válido");
+                }
+                else {
+                    let indice = productos.findIndex(producto => producto.id === idProducto);
+                    if (indice === -1) {
+                        alert("Producto con ID " + idProducto + " no encontrado");
+                    } else {
+                        while (true) {
+                            let cantidad = prompt("Ingrese la cantidad (positiva) a consumir del producto " + productos[indice].descripcion + "\n"
+                                                + "Stock disponible: " + productos[indice].stock );
+                            if (cantidad === null) {
+                                break;
+                            }
+                            cantidad = parseInt(cantidad);
+                            if (isNaN(cantidad) || cantidad <= 0) {
+                                alert("Debe ingresar una cantidad válida mayor que 0.");
+                                continue;
+                            }
+                            if (productos[indice].stock < cantidad) {
+                                alert("Stock insuficiente.\nStock actual: " + productos[indice].stock);
+                                continue;
+                            }
+                            productos[indice].stock = productos[indice].stock - cantidad;
+                            alert(cantidad + " unidades del producto " + productos[indice].descripcion + " consumidas con éxito");
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Función ingresa stock de producto 
+function ingresarStock() {
+    while (true) {
+        let lista = armarListaProductos();
+        if (cantidadProductos === 0) {
+            alert(lista);
+            return;
+        }
+        else {
+            lista = lista + "Ingrese Id del producto a ingresar stock o presione boton cancelar:";
+            let opcion = prompt(lista);
+            if (opcion === null) {
+                return;
+            }
+            else {
+                let idProducto = parseInt(opcion);
+
+                if (isNaN(idProducto)) {
+                    alert("Debe ingresar un número válido");
+                }
+                else {
+                    let indice = productos.findIndex(producto => producto.id === idProducto);
+                    if (indice === -1) {
+                        alert("Producto con ID " + idProducto + " no encontrado");
+                    } else {
+                        while (true) {
+                            let cantidad = prompt("Ingrese la cantidad de stock a ingresar del producto " + productos[indice].descripcion );
+                            if (cantidad === null) {
+                                break;
+                            }
+                            cantidad = parseInt(cantidad);
+                            if (isNaN(cantidad) || cantidad <= 0) {
+                                alert("Debe ingresar una cantidad válida mayor que 0.");
+                                continue;
+                            }
+                            productos[indice].stock = productos[indice].stock + cantidad;
+                            alert(cantidad + " unidades del producto " + productos[indice].descripcion + " ingresadas con éxito");
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+
 //INICIO DEL PROGRAMA-----------------------------------------
 function iniciarSimulador() {
     let continua = true
@@ -133,7 +234,12 @@ function iniciarSimulador() {
                 case 3:
                     eliminarProducto();
                     break;
-                case 9:
+                case 4:
+                    consumirStock();
+                    break;
+                case 5:
+                    ingresarStock();
+                    break; case 9:
                     continua = !confirm("Desea salir el sistema?");
                     break;
             }
