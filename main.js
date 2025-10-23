@@ -1,207 +1,258 @@
+//DEFINICION DE CLASES Y ARRAYS
+class Producto {
+    constructor(id, descripcion) {
+        this.id = id;
+        this.descripcion = descripcion;
+        this.stock = 0;
+    }
+    ingresarStock(cantidad) {
+        if (cantidad > 0) {
+            this.stock += cantidad;
+            return true;
+        }
+        return false;
+    }
+    consumirStock(cantidad) {
+        if (cantidad > 0 && this.stock >= cantidad) {
+            this.stock -= cantidad;
+            return true;
+        }
+        return false;
+    }
+}
 
-// DEFINICION DE ARRAYS y VARIABLES
-let productos = [
-    { id: 1, descripcion: "arandela chica", stock: 50 },
-    { id: 2, descripcion: "arandela grande", stock: 100 },
-    { id: 3, descripcion: "Destornillador estrella", stock: 7 },
-    { id: 4, descripcion: "Destornillador plano", stock: 10 },
-];
-let ultimoId = 4;
-let cantidadProductos = productos.length;
-const listaOpcionesMenu = "Seleccione una opción del menú:\n" +
-    "1 - Mostrar inventario\n" +
-    "2 - Agregar producto nuevo\n" +
-    "3 - Eliminar un producto\n" +
-    "4 - Consumir stock de un producto\n" +
-    "5 - Ingresar stock a un producto\n" +
-    "9 - Salir\n" +
-    "\nOpción:";
+let productos = [];
+let ultimoId = 0;
+
 
 //DEFINICION DE FUNCIONES-----------------------------------------
-function armarListaProductos() {
-    cantidadProductos = productos.length;
-    let listaProductos = "";
-    if (cantidadProductos === 0) {
-        listaProductos = "Sin productos en el inventario";
-    } else {
-        listaProductos = "ID | Descripción | Stock\n";
-        listaProductos = listaProductos + "--------------------------------------\n";
-        for (let i = 0; i < cantidadProductos; i++) {
-            listaProductos = listaProductos +
-                productos[i].id + " | " +
-                productos[i].descripcion + " | Stock: " +
-                productos[i].stock + "\n";
+
+// Recupero inventario del localstorage
+function cargarProductos() {
+    const datos = localStorage.getItem('productos');
+
+    if (datos) {
+        const productosLocalstorage = JSON.parse(datos);
+        productos = productosLocalstorage.map(p => {
+            const producto = new Producto(p.id, p.descripcion);
+            producto.stock = p.stock;
+            return producto;
+        });
+        const idGuardado = localStorage.getItem('ultimoId');
+        if (idGuardado) {
+            ultimoId = parseInt(idGuardado);
         }
-        listaProductos = listaProductos + "--------------------------------------\n";
     }
-    return listaProductos;
 }
+
 // Función muestra inventario de productos
-function mostrarInventario() {
-    let lista = armarListaProductos();
-    if (cantidadProductos !== 0) {
-        lista = lista + "cantidad de productos en el inventario: " + cantidadProductos
-    };
-    alert(lista);
+const mostrarInventario = () => {
+
+    //Agrego información cantidad de items
+    const encabezadolistainventario = document.getElementById("encabezado-listainventario");
+
+    encabezadolistainventario.innerHTML = "";
+    const parrafocantidad = document.createElement("p");
+    parrafocantidad.textContent = "Cantidad de items: " + productos.length;
+    encabezadolistainventario.appendChild(parrafocantidad);
+
+    //recore array productos
+    const listainventario = document.getElementById("lista-inventario");
+
+    listainventario.innerHTML = "";
+    productos.forEach((producto) => {
+        const parrafoproducto = document.createElement("p");
+        parrafoproducto.textContent = `${producto.id} | ${producto.descripcion} | ${producto.stock}`;
+        parrafoproducto.textContent = `${String(producto.id).padStart(5)}    | ${producto.descripcion.padEnd(30)} | ${String(producto.stock).padStart(10)}`;
+        listainventario.appendChild(parrafoproducto)
+    })
 }
 
 //Función agrega un producto
 function agregarProducto() {
-    while (true) {
-        let descripcion = prompt("Ingrese la descripción del nuevo producto o presione boton cancelar:");
-        console.log(descripcion);
+
+    let continuar = true;
+
+    while (continuar) {
+
+        let descripcion = prompt("Ingrese la descripción del nuevo producto o presione botón cancelar:");
+
         if (descripcion === null) {
-            return;
+            continuar = false;
+        } else if (descripcion === "") {
+            alert("Debe ingresar una descripción");
+        } else {
+            ultimoId++;
+            const nuevoProducto = new Producto(ultimoId, descripcion);
+            productos.push(nuevoProducto);
+            localStorage.setItem('productos', JSON.stringify(productos));
+            localStorage.setItem('ultimoId', ultimoId);
+            alert(`Producto Id: ${ultimoId}\nDescripción: ${descripcion}\nAgregado al inventario con stock 0`);
+            mostrarInventario();
         }
-        else {
-            if (descripcion === "") {
-                alert("Debe ingresar una descripción")
-            }
-            else {
-                ultimoId = ultimoId + 1
-                productos.push({
-                    id: ultimoId,
-                    descripcion: descripcion,
-                    stock: 0
-                });
-                cantidadProductos = productos.length;
-                alert("Producto Id: " + ultimoId + " Descripción: " + descripcion + "\n agregado al inventario con stock 0");
-            }
-        }
-    };
+    }
 }
 
-// Función elimina un producto
+
+//Función elimina un producto
 function eliminarProducto() {
-    while (true) {
-        let lista = armarListaProductos();
-        if (cantidadProductos === 0) {
-            alert(lista);
-            return;
+    if (productos.length === 0) {
+        alert("No hay productos en el inventario para eliminar");
+        return;
+    }
+
+    let continuar = true;
+
+    while (continuar) {
+        let opcion = prompt("Ingrese el ID del producto a eliminar o presione botón cancelar:");
+        if (opcion === null) {
+            continuar = false;
         }
         else {
-            lista = lista + "Ingrese Id del producto a eliminar o presione boton cancelar:";
-            let opcion = prompt(lista);
-            if (opcion === null) {
-                return;
+            let idproducto = parseInt(opcion);
+
+            if (isNaN(idproducto)) {
+                alert("Debe ingresar un número válido");
             }
             else {
-                let idProducto = parseInt(opcion);
 
-                if (isNaN(idProducto)) {
-                    alert("Debe ingresar un número válido");
-                }
-                else {
-                    let indice = productos.findIndex(producto => producto.id === idProducto);
+                const indice = productos.findIndex(producto => producto.id === idproducto);
 
-                    if (indice === -1) {
-                        alert("Producto con ID " + idProducto + " no encontrado");
-                    } else {
-                        let productoEliminado = productos[indice];
+                if (indice === -1) {
+                    alert(`No se encontró un producto con ID: ${idproducto}`);
+                } else {
+                    const producto = productos[indice];
+                    const confirmar = confirm(`¿Está seguro de eliminar el producto?\nID: ${producto.id}\nDescripción: ${producto.descripcion}\nStock: ${producto.stock}`);
+
+                    if (confirmar) {
                         productos.splice(indice, 1);
-                        cantidadProductos = productos.length;
-                        alert("Producto ID: " + productoEliminado.id +
-                            " | " + productoEliminado.descripcion + " | eliminado con éxito");
+                        localStorage.setItem('productos', JSON.stringify(productos));
+                        alert(`Producto "${producto.descripcion}" eliminado con éxito`);
+                        mostrarInventario();
                     }
                 }
             }
         }
     }
 }
-
 
 // Función consume stock de producto 
 function consumirStock() {
-    while (true) {
-        let lista = armarListaProductos();
-        if (cantidadProductos === 0) {
-            alert(lista);
-            return;
+    if (productos.length === 0) {
+        alert("No hay productos en el inventario");
+        return;
+    }
+
+    let continuar = true;
+
+    while (continuar) {
+        let opcion = prompt("Ingrese el ID del producto a consumir stock  o presione botón cancelar:");
+        if (opcion === null) {
+            continuar = false;
         }
         else {
-            lista = lista + "Ingrese Id del producto a consumir stock o presione boton cancelar:";
-            let opcion = prompt(lista);
-            if (opcion === null) {
-                return;
+            let idproducto = parseInt(opcion);
+
+            if (isNaN(idproducto)) {
+                alert("Debe ingresar un número válido");
             }
             else {
-                let idProducto = parseInt(opcion);
 
-                if (isNaN(idProducto)) {
-                    alert("Debe ingresar un número válido");
-                }
-                else {
-                    let indice = productos.findIndex(producto => producto.id === idProducto);
-                    if (indice === -1) {
-                        alert("Producto con ID " + idProducto + " no encontrado");
-                    } else {
-                        while (true) {
-                            let cantidad = prompt("Ingrese la cantidad (positiva) a consumir del producto " + productos[indice].descripcion + "\n"
-                                                + "Stock disponible: " + productos[indice].stock );
-                            if (cantidad === null) {
-                                break;
-                            }
+                const indice = productos.findIndex(producto => producto.id === idproducto);
+
+                if (indice === -1) {
+                    alert(`No se encontró un producto con ID: ${idproducto}`);
+                } else {
+                    const producto = productos[indice];
+
+                    let continuarcnt = true;
+
+                    while (continuarcnt) {
+                        let cantidad = prompt(`Ingrese la cantidad (positiva) a consumir del producto ${producto.descripcion}\n Stock disponible: ${producto.stock}`);
+                        if (cantidad === null) {
+                            continuarcnt = false;
+                        }
+                        else {
                             cantidad = parseInt(cantidad);
                             if (isNaN(cantidad) || cantidad <= 0) {
                                 alert("Debe ingresar una cantidad válida mayor que 0.");
-                                continue;
                             }
-                            if (productos[indice].stock < cantidad) {
-                                alert("Stock insuficiente.\nStock actual: " + productos[indice].stock);
-                                continue;
+                            else {
+                                if (producto.stock < cantidad) {
+                                    alert(`Stock insuficiente.\nStock actual: ${producto.stock}`);
+                                }
+                                else {
+                                    if (producto.consumirStock(cantidad)) {
+                                        localStorage.setItem('productos', JSON.stringify(productos));
+                                        alert(`Se consumieron ${cantidad} unidades de "${producto.descripcion}"\nStock actual: ${producto.stock}`);
+                                        mostrarInventario();
+                                        continuarcnt = false;
+                                    }
+                                }
                             }
-                            productos[indice].stock = productos[indice].stock - cantidad;
-                            alert(cantidad + " unidades del producto " + productos[indice].descripcion + " consumidas con éxito");
-                            break;
                         }
                     }
+
                 }
             }
         }
     }
 }
 
+
 // Función ingresa stock de producto 
 function ingresarStock() {
-    while (true) {
-        let lista = armarListaProductos();
-        if (cantidadProductos === 0) {
-            alert(lista);
-            return;
+    if (productos.length === 0) {
+        alert("No hay productos en el inventario");
+        return;
+    }
+
+    let continuar = true;
+
+    while (continuar) {
+        let opcion = prompt("Ingrese el ID del producto a ingresar stock  o presione botón cancelar:");
+        if (opcion === null) {
+            continuar = false;
         }
         else {
-            lista = lista + "Ingrese Id del producto a ingresar stock o presione boton cancelar:";
-            let opcion = prompt(lista);
-            if (opcion === null) {
-                return;
+            let idproducto = parseInt(opcion);
+
+            if (isNaN(idproducto)) {
+                alert("Debe ingresar un número válido");
             }
             else {
-                let idProducto = parseInt(opcion);
 
-                if (isNaN(idProducto)) {
-                    alert("Debe ingresar un número válido");
-                }
-                else {
-                    let indice = productos.findIndex(producto => producto.id === idProducto);
-                    if (indice === -1) {
-                        alert("Producto con ID " + idProducto + " no encontrado");
-                    } else {
-                        while (true) {
-                            let cantidad = prompt("Ingrese la cantidad de stock a ingresar del producto " + productos[indice].descripcion );
-                            if (cantidad === null) {
-                                break;
-                            }
+                const indice = productos.findIndex(producto => producto.id === idproducto);
+
+                if (indice === -1) {
+                    alert(`No se encontró un producto con ID: ${idproducto}`);
+                } else {
+                    const producto = productos[indice];
+
+                    let continuarcnt = true;
+
+                    while (continuarcnt) {
+                        let cantidad = prompt(`Ingrese la cantidad (positiva) a ingresar del producto ${producto.descripcion}\n`);
+                        if (cantidad === null) {
+                            continuarcnt = false;
+                        }
+                        else {
                             cantidad = parseInt(cantidad);
                             if (isNaN(cantidad) || cantidad <= 0) {
                                 alert("Debe ingresar una cantidad válida mayor que 0.");
-                                continue;
                             }
-                            productos[indice].stock = productos[indice].stock + cantidad;
-                            alert(cantidad + " unidades del producto " + productos[indice].descripcion + " ingresadas con éxito");
-                            break;
+                            else {
+                                if (producto.ingresarStock(cantidad)) {
+                                    localStorage.setItem('productos', JSON.stringify(productos));
+                                    alert(`Se ingresaron ${cantidad} unidades de "${producto.descripcion}"\nStock actual: ${producto.stock}`);
+                                    mostrarInventario();
+                                    continuarcnt = false;
+                                }
+                            }
                         }
                     }
                 }
+
             }
         }
     }
@@ -210,41 +261,18 @@ function ingresarStock() {
 
 
 //INICIO DEL PROGRAMA-----------------------------------------
-function iniciarSimulador() {
-    let continua = true
-    do {
-        let opcionMenu = prompt(listaOpcionesMenu);
-        if (opcionMenu === null) {
-            opcionMenu = "9"
-        }
-        // console.log(opcionMenu + "-" + isNaN(opcionMenu));
-        // console.log("pasa");
-        if (isNaN(opcionMenu) || parseInt(opcionMenu) < 1 || parseInt(opcionMenu) > 9) {
-            alert("Debe ingresar una opción válida");
-        }
-        else {
-            console.log(parseInt(opcionMenu));
-            switch (parseInt(opcionMenu)) {
-                case 1:
-                    mostrarInventario();
-                    break;
-                case 2:
-                    agregarProducto();
-                    break;
-                case 3:
-                    eliminarProducto();
-                    break;
-                case 4:
-                    consumirStock();
-                    break;
-                case 5:
-                    ingresarStock();
-                    break; case 9:
-                    continua = !confirm("Desea salir el sistema?");
-                    break;
-            }
-        }
-    }
-    while (continua);
-}
+cargarProductos();
+mostrarInventario()
+// Ejecuta funciones cuando se presiona un boton
+const btnAgregarProducto = document.getElementById("btn-agregaProducto");
+btnAgregarProducto.addEventListener("click", agregarProducto);
+
+const btnEliminarProducto = document.getElementById("btn-eliminaProducto");
+btnEliminarProducto.addEventListener("click", eliminarProducto);
+
+const btnIngresarStock = document.getElementById("btn-ingresaStock");
+btnIngresarStock.addEventListener("click", ingresarStock);
+
+const btnConsumeStock = document.getElementById("btn-consumeStock");
+btnConsumeStock.addEventListener("click", consumirStock);
 
